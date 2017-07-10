@@ -11,6 +11,6 @@
     "require": {
         "league/plates": "1.1.*",
 		"jasny/db-mysql": "*",
-		"jdorn/sql-formatter": "dev-master"
+		"jdorn/sql-formatter": "1.*"
     }
 }
