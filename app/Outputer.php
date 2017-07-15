@@ -8,14 +8,16 @@ class Outputer
 {
     private $explainer;
     private $io;
+    private $noANSI;
 
     /**
      * summary
      */
-    public function __construct(Explainer $explainer, SymfonyStyle $io)
+    public function __construct(Explainer $explainer, SymfonyStyle $io, $noANSI)
     {
         $this->explainer = $explainer;
         $this->io = $io;
+        $this->noANSI = $noANSI;
     }
 
     public function render()
@@ -25,7 +27,11 @@ class Outputer
         }
 
         $this->io->section('Query');
-        $this->io->write(\SqlFormatter::highlight($this->explainer->getQuery()));
+        $query = $this->explainer->getQuery();
+        if (!$this->noANSI) {
+            $query = \SqlFormatter::highlight($query);
+        }
+        $this->io->write($query);
         $this->io->section('Result');
         $this->io->table($this->getHeader(), $this->getBody());
 

@@ -15,6 +15,7 @@ class ExplainCommand extends Command
 {
     private $io;
     private $version;
+    private $input;
 
     protected function configure()
     {
@@ -29,6 +30,7 @@ class ExplainCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->input = $input;
         $this->initStyles($input, $output);
         $this->setUpDatabase($input);
 
@@ -56,7 +58,7 @@ class ExplainCommand extends Command
             $explainer->addRow(new Row($result, null, $explainer));
         }
 
-        $outputer = new Outputer($explainer, $this->io);
+        $outputer = new Outputer($explainer, $this->io, $this->input->getOption('no-ansi'));
         $outputer->render();
     }
 
