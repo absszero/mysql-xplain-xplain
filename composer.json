@@ -9,8 +9,23 @@
         }
     ],
     "require": {
-        "league/plates": "1.1.*",
-		"jasny/db-mysql": "*",
-		"jdorn/sql-formatter": "1.*"
-    }
+        "symfony/console": "3.1.*",
+        "league/plates": "1.0.*",
+        "jasny/db-mysql": "1.*",
+        "jdorn/sql-formatter": "1.2.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Rap2hpoutre\\MySQLExplainExplain\\": "app/"
+        }
+    },
+    "config": {
+        "preferred-install": "dist"
+    },
+    "bin": [
+        "bin/explain"
+    ]
 }

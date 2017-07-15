@@ -14,7 +14,7 @@ if (isset($_SESSION['mysql'])) {
 	new DB(
 		$_SESSION['mysql']['host'],
 		$_SESSION['mysql']['user'],
-		$_SESSION['mysql']['password'],
+		$_SESSION['mysql']['pass'],
 		$_SESSION['mysql']['base']
 	);
 	$mysql_version = mb_substr(DB::conn()->server_info,0,3);

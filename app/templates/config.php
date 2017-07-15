@@ -9,8 +9,8 @@
 		<input type="text" class="form-control" name="user" id="user" placeholder="root" value="<?php if (isset($_SESSION['mysql']['user'])) echo $_SESSION['mysql']['user']; ?>">
 	</div>
 	<div class="form-group">
-		<label for="password">Password</label>
-		<input type="password" class="form-control" name="password" id="password" value="<?php if (isset($_SESSION['mysql']['password'])) echo $_SESSION['mysql']['password']; ?>">
+		<label for="pass">Password</label>
+		<input type="pass" class="form-control" name="pass" id="pass" value="<?php if (isset($_SESSION['mysql']['pass'])) echo $_SESSION['mysql']['pass']; ?>">
 	</div>
 	<div class="form-group">
 		<label for="base">Default database</label>
