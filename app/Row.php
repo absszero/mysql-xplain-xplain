@@ -1,6 +1,7 @@
 <?php
 namespace Rap2hpoutre\MySQLExplainExplain;
 
+use Jasny\MySQL\DB_Exception;
 use \Jasny\MySQL\DB as DB;
 
 /**
@@ -42,9 +43,16 @@ class Row
     public function __construct($row, Explainer $explainer = null, array $tables)
     {
         foreach ($row as $k => $v) {
-            if ('table' === $k and isset($tables[$v])) {
-                $v = $tables[$v];
+            if ('table' === $k) {
+                if (is_null($v)) {
+                    throw new DB_Exception($row['Extra'],0, $explainer->getQuery());
+                }
+
+                if (isset($tables[$v])) {
+                    $v = $tables[$v];
+                }
             }
+
             $this->cells[$k] = new Cell($v);
         }
 
@@ -287,20 +295,20 @@ class Row
             'system' =>         'The table has only one row (= system table). This is a special case of the const join type.',
             'const' =>          "<p>The table has at most one matching row, which is read at the start of the query.
                                 In the following queries, <code>{$table}</code> can be used as a const table:</p>" .
-                                \SqlFormatter::highlight("SELECT * FROM {$table} WHERE {$this->getPrimaryKey()->col_name} = 1;"),
+                                SQLDecorator::highlight("SELECT * FROM {$table} WHERE {$this->getPrimaryKey()->col_name} = 1;"),
             'eq_ref' =>         '<p>One row is read from this table for each combination of rows from the previous tables. Example:</p>' .
-                                \SqlFormatter::highlight(
+                                SQLDecorator::highlight(
                                     "SELECT * FROM ref_table,{$table} WHERE ref_table.key_column={$table}.column;"
                                 ),
             'ref' =>            '<p>All rows with matching index values are read from this table for each combination of rows from the previous tables. Example:</p>' .
-                                \SqlFormatter::highlight("SELECT * FROM {$this->cells['table']->v} WHERE {$this->cells['key']->v}=expr;"),
+                                SQLDecorator::highlight("SELECT * FROM {$this->cells['table']->v} WHERE {$this->cells['key']->v}=expr;"),
             'fulltext' =>       'The join is performed using a FULLTEXT index',
             'ref_or_null' =>    'This join type is like ref, but with the addition that MySQL does an extra search for rows that contain NULL values',
             'index_merge' =>    'This join type indicates that the Index Merge optimization is used.
                                 In this case, the key column in the output row contains a list of indexes used, and key_len contains a list of the
                                 longest key parts for the indexes used. For more information, see Section 8.2.1.4, “Index Merge Optimization”',
             'unique_subquery'=> 'This type replaces ref for some IN subqueries of the following form:' .
-                                \SqlFormatter::highlight("value IN (SELECT primary_key FROM single_table WHERE some_expr)"),
+                                SQLDecorator::highlight("value IN (SELECT primary_key FROM single_table WHERE some_expr)"),
             'index_subquery' => 'This join type is similar to unique_subquery. It replaces IN subqueries, but it works for nonunique indexes.',
             'range' =>          "<p>Only rows that are in a given range are retrieved, using an index (in this query <code>{$this->cells['key']->v}</code>)
                                 to select the rows.</p>
@@ -325,7 +333,7 @@ class Row
         $this->cells['table']->info = 'No table schema informations';
         $table_schema = DB::conn()->fetchPairs("SHOW CREATE TABLE `{$this->cells['table']->v}`");
         $this->cells['table']->info = '<p>Table Schema</p>';
-        $this->cells['table']->info .= \SqlFormatter::format($table_schema[$this->cells['table']->v]);
+        $this->cells['table']->info .= SQLDecorator::format($table_schema[$this->cells['table']->v]);
         $this->uses_table = true;
     }
 

@@ -3,6 +3,7 @@
 namespace Rap2hpoutre\MySQLExplainExplain;
 
 use Jasny\MySQL\DB;
+use Jasny\MySQL\DB_Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputArgument;
@@ -13,19 +14,19 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ExplainCommand extends Command
 {
-    private $io;
     private $version;
-    private $input;
 
     protected function configure()
     {
         $this->setName("explain")
-                ->setDescription("explain a SQL file")
+                ->setDescription("Explain a SQL query or SQL file")
                 ->addArgument('query', InputArgument::REQUIRED, 'The SQL query or SQL file')
                 ->addOption('host', 'd', InputOption::VALUE_OPTIONAL, 'The host name')
                 ->addOption('base', 'b', InputOption::VALUE_OPTIONAL, 'The database')
                 ->addOption('user', 'u', InputOption::VALUE_OPTIONAL, 'The user name')
-                ->addOption('pass', 'p', InputOption::VALUE_OPTIONAL, 'The password');
+                ->addOption('pass', 'p', InputOption::VALUE_OPTIONAL, 'The password')
+                ->addOption('danger', 'g', InputOption::VALUE_NONE, 'Output only danger queries')
+                ->addOption('no-hint', null, InputOption::VALUE_NONE, 'Disable hint');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -37,7 +38,7 @@ class ExplainCommand extends Command
         if (file_exists($query)) {
             $file = new \SplFileObject($query);
             while (!$file->eof()) {
-                $query = $file->fgets();
+                $query = trim($file->fgets());
                 $this->explain($query);
             }
         } else {
@@ -47,22 +48,27 @@ class ExplainCommand extends Command
 
     private function explain($query)
     {
-        $results = $this->query($query);
-        if (!$results) {
-            return;
+        try {
+            $results = $this->query($query);
+            if (!$results) {
+                return;
+            }
+
+            $explainer = new Explainer($query, $this->version);
+
+            $table = new Table($query);
+            $tables = $table->getTables();
+
+            foreach ($results as $result) {
+                $explainer->addRow(new Row($result, $explainer, $tables));
+            }
+
+            $outputer = new Outputer($explainer);
+            $outputer->render();
+        } catch (DB_Exception $e) {
+            IO::write("<error>{$e->getError()}</error>: " . SQLDecorator::highlight($e->getQuery()));
+            IO::newline();
         }
-
-        $explainer = new Explainer($query, $this->version);
-
-        $table = new Table($query);
-        $tables = $table->getTables();
-
-        foreach ($results as $result) {
-            $explainer->addRow(new Row($result, $explainer, $tables));
-        }
-
-        $outputer = new Outputer($explainer, $this->input, $this->output);
-        $outputer->render();
     }
 
     private function setUpDatabase(InputInterface $input)
@@ -113,10 +119,10 @@ class ExplainCommand extends Command
 
     public function initStyles(InputInterface $input, OutputInterface $output)
     {
+        SQLDecorator::$ansi = !$input->getOption('no-ansi');
+
         $style = new OutputFormatterStyle('red', 'cyan');
         $output->getFormatter()->setStyle('code', $style);
-
-        $this->input = $input;
-        $this->output = $output;
+        IO::setIO($input, $output);
     }
 }

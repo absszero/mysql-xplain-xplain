@@ -10,19 +10,15 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class Outputer
 {
     private $explainer;
-    private $io;
-    private $noANSI;
+    private $onlyDanger;
 
     /**
      * summary
      */
-    public function __construct(Explainer $explainer, $input, $output)
+    public function __construct(Explainer $explainer)
     {
-        $this->input = $input;
-        $this->output = $output;
         $this->explainer = $explainer;
-        $this->io = new SymfonyStyle($input, $output);
-        $this->noANSI = $input->getOption('no-ansi');
+        $this->onlyDanger = IO::$input->getOption('danger');
     }
 
     public function render()
@@ -31,23 +27,23 @@ class Outputer
             return;
         }
 
-        $query = $this->explainer->getQuery();
-        if (!$this->noANSI) {
-            $query = \SqlFormatter::format($query);
-        }
-
-        $this->io->section('Result');
-        $table = new HelperTable($this->output);
+        $table = new HelperTable(IO::$output);
         $headers = $this->getHeaders();
         $table->setHeaders($headers);
 
+        $query = SQLDecorator::format($this->explainer->getQuery());
         $rows = $this->getRows($query, count($headers));
-        $table->setRows($rows);
-        $table->render();
+        if ($rows) {
+            $table->setRows($rows);
+            $table->render();
+            IO::newline();
 
-        $this->io->newline();
-        $this->io->section('Hint');
-        $this->io->listing($this->explainer->hints);
+            if (!IO::$input->getOption('no-hint')) {
+                IO::newline();
+                IO::section('Hint');
+                IO::listing($this->explainer->hints);
+            }
+        }
     }
 
     public function getQueryRow($query, $colspan)
@@ -62,11 +58,13 @@ class Outputer
     {
         $rows = $this->getQueryRow($query, $colspan);
 
+
+        $danger = 0;
         foreach ($this->explainer->rows as $row) {
             $cols = [];
             foreach ($row->cells as $cell) {
                 $style = '%s';
-                if ($cell->isDanger()) {
+                if ($danger += $cell->isDanger()) {
                     $style = "<error>%s</error>";
                 } elseif ($cell->isSuccess()) {
                     $style = "<info>%s</info>";
@@ -76,8 +74,11 @@ class Outputer
 
                 $cols[] = sprintf($style, $cell->v);
             }
-
             $rows[] = $cols;
+        }
+
+        if ($this->onlyDanger and 0 === $danger) {
+            $rows = false;
         }
 
         return $rows;
