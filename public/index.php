@@ -1,11 +1,11 @@
 <?php
 require '../app/base.php';
 
-use \Jasny\MySQL\DB as DB;
-use \Jasny\MySQL\DB_Exception as DB_Exception;
-
-use \Rap2hpoutre\MySQLExplainExplain\Explainer as Explainer;
-use \Rap2hpoutre\MySQLExplainExplain\Row as Row;
+use Jasny\MySQL\DB;
+use Jasny\MySQL\DB_Exception;
+use Rap2hpoutre\MySQLExplainExplain\Explainer;
+use Rap2hpoutre\MySQLExplainExplain\Row;
+use Rap2hpoutre\MySQLExplainExplain\Table;
 
 $query = '';
 $explainer = null;
@@ -29,18 +29,21 @@ if (isset($_SESSION['mysql'])) {
 			}
 			// Recuperation des résultats de la requete
 			$explain_results = @DB::conn()->fetchAll(
-				(strpos(strtolower($query), 'explain') === false ? 'EXPLAIN ' : '') . $_POST['query']
+				(strpos(strtolower($query), 'explain') === false ? 'EXPLAIN ' : '') . $query
 			);
 			// Création de l'Explainer
-			$explainer = new Explainer($_POST['query'], $mysql_version);
+			$explainer = new Explainer($query, $mysql_version);
 			if (is_array($explain_results)) {
+		        $table = new Table($query);
+		        $tables = $table->getTables();
+
 				foreach ($explain_results as $result) {
 					// Création de la ligne et attachement à l'explainer
 					$explainer->addRow(
 						new Row(
 							$result,
-							$explainer->getRowsCount() > 0 ? $explainer->rows[$explainer->getRowsCount() - 1] : null ,
-							$explainer
+							$explainer,
+							$tables
 						)
 					);
 				}

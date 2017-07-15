@@ -30,7 +30,6 @@ class ExplainCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->input = $input;
         $this->initStyles($input, $output);
         $this->setUpDatabase($input);
 
@@ -54,11 +53,15 @@ class ExplainCommand extends Command
         }
 
         $explainer = new Explainer($query, $this->version);
+
+        $table = new Table($query);
+        $tables = $table->getTables();
+
         foreach ($results as $result) {
-            $explainer->addRow(new Row($result, null, $explainer));
+            $explainer->addRow(new Row($result, $explainer, $tables));
         }
 
-        $outputer = new Outputer($explainer, $this->io, $this->input->getOption('no-ansi'));
+        $outputer = new Outputer($explainer, $this->input, $this->output);
         $outputer->render();
     }
 
@@ -113,6 +116,7 @@ class ExplainCommand extends Command
         $style = new OutputFormatterStyle('red', 'cyan');
         $output->getFormatter()->setStyle('code', $style);
 
-        $this->io = new SymfonyStyle($input, $output);
+        $this->input = $input;
+        $this->output = $output;
     }
 }

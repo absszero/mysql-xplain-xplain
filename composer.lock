@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f97e4d6a48a3c4d6dc1e62903bc83137",
-    "content-hash": "2babfb84b249cdbf1a994035da838b6c",
+    "hash": "81326674781b9f2adc4fbd7c4b8ca0ce",
+    "content-hash": "7d0ad1d3faf1d7a0a05a9032105ba714",
     "packages": [
         {
             "name": "jasny/db-mysql",
@@ -151,6 +151,65 @@
                 "templating"
             ],
             "time": "2013-11-21 19:21:31"
+        },
+        {
+            "name": "phpmyadmin/sql-parser",
+            "version": "v4.1.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpmyadmin/sql-parser.git",
+                "reference": "deac47217144b21056271674533b289239e1b279"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpmyadmin/sql-parser/zipball/deac47217144b21056271674533b289239e1b279",
+                "reference": "deac47217144b21056271674533b289239e1b279",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": ">=5.3.0"
+            },
+            "conflict": {
+                "phpmyadmin/motranslator": "<3.0"
+            },
+            "require-dev": {
+                "phpunit/php-code-coverage": "*",
+                "phpunit/phpunit": "~4.8 || ~5.7"
+            },
+            "suggest": {
+                "phpmyadmin/motranslator": "Translate messages to your favorite locale"
+            },
+            "bin": [
+                "bin/highlight-query",
+                "bin/lint-query"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PhpMyAdmin\\SqlParser\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "The phpMyAdmin Team",
+                    "email": "developers@phpmyadmin.net",
+                    "homepage": "https://www.phpmyadmin.net/team/"
+                }
+            ],
+            "description": "A validating SQL lexer and parser with a focus on MySQL dialect.",
+            "homepage": "https://github.com/phpmyadmin/sql-parser",
+            "keywords": [
+                "analysis",
+                "lexer",
+                "parser",
+                "sql"
+            ],
+            "time": "2017-07-12 14:54:33"
         },
         {
             "name": "psr/log",

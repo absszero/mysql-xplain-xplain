@@ -2,6 +2,9 @@
 
 namespace Rap2hpoutre\MySQLExplainExplain;
 
+use Symfony\Component\Console\Helper\Table as HelperTable;
+use Symfony\Component\Console\Helper\TableCell;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class Outputer
@@ -13,11 +16,13 @@ class Outputer
     /**
      * summary
      */
-    public function __construct(Explainer $explainer, SymfonyStyle $io, $noANSI)
+    public function __construct(Explainer $explainer, $input, $output)
     {
+        $this->input = $input;
+        $this->output = $output;
         $this->explainer = $explainer;
-        $this->io = $io;
-        $this->noANSI = $noANSI;
+        $this->io = new SymfonyStyle($input, $output);
+        $this->noANSI = $input->getOption('no-ansi');
     }
 
     public function render()
@@ -26,22 +31,36 @@ class Outputer
             return;
         }
 
-        $this->io->section('Query');
         $query = $this->explainer->getQuery();
         if (!$this->noANSI) {
-            $query = \SqlFormatter::highlight($query);
+            $query = \SqlFormatter::format($query);
         }
-        $this->io->write($query);
-        $this->io->section('Result');
-        $this->io->table($this->getHeader(), $this->getBody());
 
+        $this->io->section('Result');
+        $table = new HelperTable($this->output);
+        $headers = $this->getHeaders();
+        $table->setHeaders($headers);
+
+        $rows = $this->getRows($query, count($headers));
+        $table->setRows($rows);
+        $table->render();
+
+        $this->io->newline();
         $this->io->section('Hint');
         $this->io->listing($this->explainer->hints);
     }
 
-    public function getBody()
+    public function getQueryRow($query, $colspan)
     {
-        $body = [];
+        return [
+            [new TableCell($query, ['colspan' => $colspan])],
+            new TableSeparator(),
+        ];
+    }
+
+    public function getRows($query, $colspan)
+    {
+        $rows = $this->getQueryRow($query, $colspan);
 
         foreach ($this->explainer->rows as $row) {
             $cols = [];
@@ -58,13 +77,13 @@ class Outputer
                 $cols[] = sprintf($style, $cell->v);
             }
 
-            $body[] = $cols;
+            $rows[] = $cols;
         }
 
-        return $body;
+        return $rows;
     }
 
-    public function getHeader()
+    public function getHeaders()
     {
         return array_keys($this->explainer->header_row);
     }
