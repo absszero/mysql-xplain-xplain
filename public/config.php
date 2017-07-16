@@ -11,6 +11,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST[$query] = '';
             }
         }
+        $_SESSION['mysql'] = array(
+            'host' => $_POST['host'],
+            'user' => $_POST['user'],
+            'pass' => $_POST['pass'],
+            'base' => $_POST['base'],
+        );
+
         $db = new DB(
             $_POST['host'],
             $_POST['user'],
