@@ -25,7 +25,8 @@ class ExplainCommand extends Command
                 ->addOption('sql-mode', 's', InputOption::VALUE_OPTIONAL, 'The SQL Mode')
                 ->addOption('danger', 'd', InputOption::VALUE_NONE, 'Output danger queries')
                 ->addOption('warning', 'w', InputOption::VALUE_NONE, 'Output warning queries')
-                ->addOption('no-hint', null, InputOption::VALUE_NONE, 'Disable hint');
+                ->addOption('no-hint', null, InputOption::VALUE_NONE, 'Disable hint')
+                ->addOption('stderr', 'e', InputOption::VALUE_OPTIONAL|InputOption::VALUE_IS_ARRAY, 'Output danger or warning queries to stderr');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -53,6 +54,10 @@ class ExplainCommand extends Command
             return;
         }
 
+        if (!$this->isSelectSQL($query)) {
+            return;
+        }
+
         try {
             $results = $this->query($query);
             if (!$results) {
@@ -71,28 +76,24 @@ class ExplainCommand extends Command
             $outputer = new Outputer($explainer);
             $outputer->render();
         } catch (DB_Exception $e) {
-            IO::write("<error>{$e->getError()}</error>: " . SQLDecorator::highlight($e->getQuery()));
-            IO::newline(2);
+            $errOutput = IO::getErrorOutput();
+            $errOutput->writeln("<error>{$e->getError()}</error>: " . SQLDecorator::highlight($e->getQuery()));
         }
     }
 
-    private function isSelectSQL($sql)
+    private function isSelectSQL($query)
     {
-        $sql = ltrim($sql);
-        return (0 === strpos(strtolower($sql), 'select'));
+        $query = ltrim($query);
+        return (0 === strpos(strtolower($query), 'select'));
     }
 
-    private function query($sql)
+    private function query($query)
     {
-        if (!$this->isSelectSQL($sql)) {
-            return false;
+        if (false === strpos(strtolower($query), 'explain')) {
+            $query = "EXPLAIN $query";
         }
 
-        if (false === strpos(strtolower($sql), 'explain')) {
-            $sql = "EXPLAIN $sql";
-        }
-
-        return $this->db->conn()->fetchAll($sql);
+        return $this->db->conn()->fetchAll($query);
     }
 
     public function initStyles(InputInterface $input, OutputInterface $output)

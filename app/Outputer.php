@@ -12,6 +12,7 @@ class Outputer
     private $explainer;
     private $onlyDanger;
     private $onlyWarning;
+    private $stderrQueries;
 
     /**
      * summary
@@ -21,6 +22,7 @@ class Outputer
         $this->explainer = $explainer;
         $this->onlyDanger = IO::$input->getOption('danger');
         $this->onlyWarning = IO::$input->getOption('warning');
+        $this->stderrQueries = IO::$input->getOption('stderr');
     }
 
     public function render()
@@ -32,12 +34,19 @@ class Outputer
         $query = SQLDecorator::format($this->explainer->getQuery());
         $rows = $this->getRows();
         if ($rows) {
-            $table = new HelperTable(IO::$output);
+            $output = IO::$output;
+            foreach (['danger', 'warning'] as $type) {
+                if ($rows[$type] and in_array($type, $this->stderrQueries)) {
+                    $output = IO::getErrorOutput();
+                }
+            }
+
+            $table = new HelperTable($output);
             $headers = $this->getHeaders();
             $table->setHeaders($headers);
 
             $queryRow = $this->getQueryRow($query, count($headers));
-            $rows = array_merge($queryRow, $rows);
+            $rows = array_merge($queryRow, $rows['rows']);
             $table->setRows($rows);
 
             $table->render();
@@ -64,14 +73,17 @@ class Outputer
         $danger = 0;
         $warning = 0;
         foreach ($this->explainer->rows as $row) {
+            $danger += $row->isDanger();
+            $warning += $row->isWarning();
+
             $cols = [];
             foreach ($row->cells as $cell) {
                 $style = '%s';
-                if ($danger += $cell->isDanger()) {
+                if ($cell->isDanger()) {
                     $style = "<error>%s</error>";
                 } elseif ($cell->isSuccess()) {
                     $style = "<info>%s</info>";
-                } elseif ($warning += $cell->isWarning()) {
+                } elseif ($cell->isWarning()) {
                     $style = '<comment>%s</comment>';
                 }
 
@@ -90,7 +102,7 @@ class Outputer
             }
         }
 
-        return $rows;
+        return compact('rows', 'danger', 'warning');
     }
 
     public function getHeaders()

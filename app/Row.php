@@ -10,6 +10,10 @@ use Jasny\MySQL\DB_Exception;
  */
 class Row
 {
+    private $dangerCells = 0;
+
+    private $warningCells = 0;
+
     /**
      * @var array
      */
@@ -48,7 +52,7 @@ class Row
         foreach ($row as $k => $v) {
             if ('table' === $k) {
                 if (is_null($v)) {
-                    throw new DB_Exception($row['Extra'],0, $explainer->getQuery());
+                    throw new DB_Exception($row['Extra'], 0, $explainer->getQuery());
                 }
 
                 if (isset($tables[$v])) {
@@ -75,6 +79,16 @@ class Row
 
         $this->cells['id']->info = 'SELECT identifier #' . $this->cells['id']->v;
         $this->cells['rows']->info = "MySQL believes it must examine {$this->cells['rows']->v} rows to execute the query";
+    }
+
+    public function isDanger()
+    {
+        return (bool)$this->dangerCells;
+    }
+
+    public function isWarning()
+    {
+        return (bool)$this->warningCells;
     }
 
     /**
@@ -113,6 +127,7 @@ class Row
         // Contient Using temporary; Using filesort
         if (preg_match('/Using temporary;\\s*Using filesort/', $this->cells['Extra']->v)) {
             $this->cells['Extra']->setDanger();
+            $this->dangerCells++;
             $this->_explainer->hints[] = 'You should avoid <code>Using temporary</code> and <code>Using filesort</code> on big queries';
             $infos[] =  '<p>You should avoid <code>Using temporary</code> and <code>Using filesort</code> on big queries.
                         It means a temporary table is created, and a sort is performed on that temporary table</p>
@@ -248,6 +263,7 @@ class Row
             if (!$this->cells['key']->v) {
                 $this->cells['possible_keys']->info .= "... but did not choose any one :(";
                 $this->cells['possible_keys']->setWarning();
+                $this->warningCells++;
             }
         }
 
@@ -255,6 +271,7 @@ class Row
         if (!$this->cells['possible_keys']->v && preg_match('/Using where/', $this->cells['Extra']->v)) {
             $this->cells['possible_keys']->v = 'NULL';
             $this->cells['possible_keys']->setDanger();
+            $this->dangerCells++;
             $indexes = $this->_keys;
             // S'il y avait des index dans la table, on propose d'utiliser ceux-là
             if (count($indexes)) {
@@ -290,6 +307,7 @@ class Row
 
         if ($this->cells['type']->v == 'ALL') {
             $this->cells['type']->setWarning();
+            $this->warningCells++;
         }
 
         $table = $this->cells['table']->v;

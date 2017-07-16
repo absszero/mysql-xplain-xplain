@@ -23,4 +23,9 @@ class IO
     {
         return call_user_func_array(array(self::$style,$name), $arguments);
     }
+
+    public static function getErrorOutput()
+    {
+        return self::$output instanceof ConsoleOutputInterface ? self::$output->getErrorOutput() : self::$output;
+    }
 }
