@@ -11,11 +11,51 @@ Getting started
  - Launch your web server, goto http://localhost/xplain or something like that
  - Start typing your queries
 
+
+Console
+----
+
+### Setup connection
+In `confg/db.php`
+```php
+<?php return array(
+    'host' => 'localhost',
+    'user' => 'root',
+    'pass' => 'pass',
+    'base' => 'my_database'
+);
+```
+Or
+```shell
+php bin/explain --host=localhost --user=root --pass=pass --base=my_database
+```
+
+### Query from string
+```shell
+php bin/explain "select * from books where id = 1"
+```
+
+### Query from SQL file
+```shell
+php bin/explain ./query_data.sql
+```
+
+### Output  danger queries
+```shell
+php bin/explain ./query_data.sql --danger
+```
+
+### Output  warning queries
+```shell
+php bin/explain ./query_data.sql --warning
+```
+
 Why?
 ----
+
 MySQL EXPLAIN command is sometimes hard to understand. We try to make it more readable with some improvements. In a web browser.
 
-Contributors 
+Contributors
 ------------
   - tazorax
   - rap2hpoutre

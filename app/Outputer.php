@@ -11,6 +11,7 @@ class Outputer
 {
     private $explainer;
     private $onlyDanger;
+    private $onlyWarning;
 
     /**
      * summary
@@ -19,6 +20,7 @@ class Outputer
     {
         $this->explainer = $explainer;
         $this->onlyDanger = IO::$input->getOption('danger');
+        $this->onlyWarning = IO::$input->getOption('warning');
     }
 
     public function render()
@@ -42,8 +44,6 @@ class Outputer
             IO::newline();
 
             if (!IO::$input->getOption('no-hint')) {
-                IO::newline();
-                IO::section('Hint');
                 IO::listing($this->explainer->hints);
             }
         }
@@ -59,9 +59,10 @@ class Outputer
 
     public function getRows()
     {
-        $rows = [];
+        $rows = array();
 
         $danger = 0;
+        $warning = 0;
         foreach ($this->explainer->rows as $row) {
             $cols = [];
             foreach ($row->cells as $cell) {
@@ -70,7 +71,7 @@ class Outputer
                     $style = "<error>%s</error>";
                 } elseif ($cell->isSuccess()) {
                     $style = "<info>%s</info>";
-                } elseif ($cell->isWarning()) {
+                } elseif ($warning += $cell->isWarning()) {
                     $style = '<comment>%s</comment>';
                 }
 
@@ -79,8 +80,14 @@ class Outputer
             $rows[] = $cols;
         }
 
-        if ($this->onlyDanger and 0 === $danger) {
-            $rows = false;
+        if ($this->onlyWarning or $this->onlyDanger) {
+            if ($this->onlyWarning and 0 === $warning) {
+                $rows = false;
+            }
+
+            if ($this->onlyDanger and 0 === $danger) {
+                $rows = false;
+            }
         }
 
         return $rows;

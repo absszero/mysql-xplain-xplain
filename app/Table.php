@@ -19,7 +19,7 @@ class Table
 
     public function getTables()
     {
-        $tables = [];
+        $tables = array();
         $parser = new Parser($this->query);
 
         foreach ($parser->statements as $statement) {
@@ -35,8 +35,8 @@ class Table
 
     private function parseStatement(SelectStatement $statement)
     {
-        $tables = [];
-        $sources = ['expr', 'from', 'where', 'group', 'having', 'order', 'join'];
+        $tables = array();
+        $sources = array('expr', 'from', 'where', 'group', 'having', 'order', 'join');
         foreach ($sources as $source) {
             $tables = array_merge($tables, $this->findTables($statement->$source));
         }
@@ -46,7 +46,7 @@ class Table
 
     private function findTables($items)
     {
-        $tables = [];
+        $tables = array();
         if (is_array($items)) {
             foreach ($items as $item) {
                 $tables = array_merge($tables, $this->findTables($item));
