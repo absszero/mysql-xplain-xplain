@@ -2,7 +2,6 @@
 
 namespace Rap2hpoutre\MySQLExplainExplain;
 
-use Jasny\MySQL\DB;
 use Jasny\MySQL\DB_Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
@@ -14,8 +13,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ExplainCommand extends Command
 {
-    private $version;
-
     protected function configure()
     {
         $this->setName("explain")
@@ -32,8 +29,9 @@ class ExplainCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->db = new DB();
+        $this->db->setUp($input);
         $this->initStyles($input, $output);
-        $this->setUpDatabase($input);
 
         $query = $input->getFirstArgument();
         if (file_exists($query)) {
@@ -49,13 +47,17 @@ class ExplainCommand extends Command
 
     private function explain($query)
     {
+        if (empty($query)) {
+            return;
+        }
+
         try {
             $results = $this->query($query);
             if (!$results) {
-                return;
+                throw new DB_Exception('no result', 0, $query);
             }
 
-            $explainer = new Explainer($query, $this->version);
+            $explainer = new Explainer($query);
 
             $table = new Table($query);
             $tables = $table->getTables();
@@ -68,35 +70,8 @@ class ExplainCommand extends Command
             $outputer->render();
         } catch (DB_Exception $e) {
             IO::write("<error>{$e->getError()}</error>: " . SQLDecorator::highlight($e->getQuery()));
-            IO::newline();
+            IO::newline(2);
         }
-    }
-
-    private function setUpDatabase(InputInterface $input)
-    {
-        $configure = array();
-        $file = __DIR__ . '/../conf/db.php';
-        if (file_exists($file)) {
-            $configure = require $file;
-        }
-
-        foreach (['host', 'base','user', 'pass'] as $field) {
-            if (!array_key_exists($field, $configure)) {
-                $configure[$field] = null;
-            }
-            if ($value = $input->getOption($field)) {
-                $configure[$field] = $value;
-            }
-        }
-
-        new DB(
-            $configure['host'],
-            $configure['user'],
-            $configure['pass'],
-            $configure['base']
-        );
-
-        $this->version = mb_substr(DB::conn()->server_info, 0, 3);
     }
 
     private function isSelectSQL($sql)
@@ -115,7 +90,7 @@ class ExplainCommand extends Command
             $sql = "EXPLAIN $sql";
         }
 
-        return DB::conn()->fetchAll($sql);
+        return $this->db->conn()->fetchAll($sql);
     }
 
     public function initStyles(InputInterface $input, OutputInterface $output)

@@ -2,7 +2,6 @@
 namespace Rap2hpoutre\MySQLExplainExplain;
 
 use Jasny\MySQL\DB_Exception;
-use \Jasny\MySQL\DB as DB;
 
 /**
  * Class Row
@@ -32,6 +31,8 @@ class Row
 
     public $uses_table = false;
 
+    private $db;
+
     /**
      * Row::__construct
      *
@@ -42,6 +43,8 @@ class Row
      */
     public function __construct($row, Explainer $explainer = null, array $tables)
     {
+        $this->db = new DB();
+
         foreach ($row as $k => $v) {
             if ('table' === $k) {
                 if (is_null($v)) {
@@ -331,7 +334,7 @@ class Row
     public function buildTableSchema()
     {
         $this->cells['table']->info = 'No table schema informations';
-        $table_schema = DB::conn()->fetchPairs("SHOW CREATE TABLE `{$this->cells['table']->v}`");
+        $table_schema = $this->db->conn()->fetchPairs("SHOW CREATE TABLE `{$this->cells['table']->v}`");
         $this->cells['table']->info = '<p>Table Schema</p>';
         $this->cells['table']->info .= SQLDecorator::format($table_schema[$this->cells['table']->v]);
         $this->uses_table = true;
@@ -371,7 +374,7 @@ class Row
      */
     public function initKeys($table)
     {
-        $sql_keys = DB::conn()->fetchAll("SHOW INDEX FROM `$table`");
+        $sql_keys = $this->db->conn()->fetchAll("SHOW INDEX FROM `$table`");
         if (is_array($sql_keys) && count($sql_keys)) {
             foreach ($sql_keys as $sql_key) {
                 $this->_keys[] = new Key($sql_key);
@@ -389,7 +392,7 @@ class Row
      */
     public function initColumns($table)
     {
-        $sql_cols = DB::conn()->fetchAll("SHOW COLUMNS FROM `$table`");
+        $sql_cols = $this->db->conn()->fetchAll("SHOW COLUMNS FROM `$table`");
         if (is_array($sql_cols) && count($sql_cols)) {
             $has_id_col = false;
             $has_null_col = false;

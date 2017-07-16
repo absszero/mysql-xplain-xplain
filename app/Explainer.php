@@ -15,8 +15,6 @@ class Explainer
 
     public $header_row;
 
-    public $mysql_version;
-
     public $rows = array();
 
     public $hints = array();
@@ -27,13 +25,11 @@ class Explainer
      * Explainer::__construct($query)
      *
      * @param  mixed $query
-     * @param  mixed $mysql_version
      * @return
      */
-    public function __construct($query, $mysql_version)
+    public function __construct($query)
     {
         $this->query = $query;
-        $this->mysql_version = $mysql_version;
         $this->initExplainCols();
         $this->performQueryAnalysis();
     }
@@ -93,9 +89,9 @@ class Explainer
         if (preg_match('/LIKE\\s[\'"](%.*?)[\'"]/i', $this->query, $matches)) {
             $this->hints[] =    'An argument has a leading wildcard character: <code>' . $matches[1]. '</code>. The predicate with this argument is not sargable and cannot use an index if one exists.';
         }
-        if ($this->mysql_version < 5.5) {
+        if (DB::$version < 5.5) {
             if (preg_match('/\\sIN\\s*\\(\\s*SELECT/i', $this->query)) {
-                $this->hints[] =    '<code>IN()</code> and <code>NOT IN()</code> subqueries are poorly optimized in that MySQL version : ' . $this->mysql_version . '. MySQL executes the subquery as a dependent subquery for each row in the outer query';
+                $this->hints[] =    '<code>IN()</code> and <code>NOT IN()</code> subqueries are poorly optimized in that MySQL version : ' . DB::$version . '. MySQL executes the subquery as a dependent subquery for each row in the outer query';
             }
         }
     }
@@ -118,7 +114,7 @@ class Explainer
             'ref' => 'The ref column shows which columns or constants are compared to the index named in the key column to select rows from the table.',
             'rows' => 'The rows column indicates the number of rows MySQL believes it must examine to execute the query. For InnoDB tables, this number is an estimate, and may not always be exact.',
         );
-        if ((float) $this->mysql_version >= 5.7) {
+        if ((float) DB::$version >= 5.7) {
             $this->header_row['filtered'] = 'The filtered column indicates an estimated percentage of table rows that will be filtered by the table condition. That is, rows shows the estimated number of rows examined and rows × filtered / 100 shows the number of rows that will be joined with previous tables.';
         }
 
