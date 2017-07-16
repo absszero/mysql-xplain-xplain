@@ -1,25 +1,24 @@
 <?php
+use Rap2hpoutre\MySQLExplainExplain\DB;
+
 require '../app/base.php';
-use \Jasny\MySQL\DB as DB;
 
 // Enregistrement de Configuration MySQl
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        foreach (['host', 'user', 'base'] as $query) {
+        foreach (['host', 'user', 'pass', 'base'] as $query) {
             if (!isset($_POST[$query])) {
-                $_POST[$query] = $query;
+                $_POST[$query] = '';
             }
         }
-
-        $c = @new DB(
+        $db = new DB(
             $_POST['host'],
             $_POST['user'],
             $_POST['pass'],
             $_POST['base']
         );
-        if ($c->connect_errno) {
-            throw new Exception('Failed to connect to MySQL: ' . $c->connect_error);
-        }
+        $db->setUp();
+
         // Login permanent : à faire plus propre et plus secure
         $conf_dir = '../conf';
         if (isset($_POST['permanent_login']) && $_POST['permanent_login'] == '1') {

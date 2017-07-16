@@ -12,12 +12,6 @@ require __DIR__ . '/constants.php';
 // Session
 session_start();
 
-// Permanent login
-$dbconfig = __DIR__ . '/../conf/db.php';
-if (file_exists($dbconfig)) {
-    $_SESSION['mysql'] =  require  $dbconfig;
-}
-
 // UTF-8
 header('Content-Type: text/html; charset=utf-8');
 
