@@ -22,6 +22,7 @@ class ExplainCommand extends Command
                 ->addOption('base', 'b', InputOption::VALUE_OPTIONAL, 'The database')
                 ->addOption('user', 'u', InputOption::VALUE_OPTIONAL, 'The user name')
                 ->addOption('pass', 'p', InputOption::VALUE_OPTIONAL, 'The password')
+                ->addOption('sql-mode', 's', InputOption::VALUE_OPTIONAL, 'The SQL Mode')
                 ->addOption('danger', 'd', InputOption::VALUE_NONE, 'Output danger queries')
                 ->addOption('warning', 'w', InputOption::VALUE_NONE, 'Output warning queries')
                 ->addOption('no-hint', null, InputOption::VALUE_NONE, 'Disable hint');
@@ -31,6 +32,7 @@ class ExplainCommand extends Command
     {
         $this->db = new DB();
         $this->db->setUp($input);
+
         $this->initStyles($input, $output);
 
         $query = $input->getFirstArgument();

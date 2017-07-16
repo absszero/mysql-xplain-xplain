@@ -34,6 +34,11 @@ class DB
         );
 
         self::$version = mb_substr($this->conn()->server_info, 0, 3);
+
+        $mode = $input->getOption('sql-mode');
+        if ($mode) {
+            $this->conn()->query("set sql_mode=$mode");
+        }
     }
 
     public function __call($name, array $arguments)

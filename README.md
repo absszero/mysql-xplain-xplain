@@ -40,14 +40,19 @@ php bin/explain "select * from books where id = 1"
 php bin/explain ./query_data.sql
 ```
 
-### Output  danger queries
+### Output danger queries
 ```shell
 php bin/explain ./query_data.sql --danger
 ```
 
-### Output  warning queries
+### Output warning queries
 ```shell
 php bin/explain ./query_data.sql --warning
+```
+
+### Set SQL mode
+```shell
+php bin/explain ./query_data.sql --sql-mode=ANSI
 ```
 
 Why?
