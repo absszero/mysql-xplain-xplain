@@ -21,11 +21,11 @@ class ExplainCommand extends Command
         $this->setName("explain")
                 ->setDescription("Explain a SQL query or SQL file")
                 ->addArgument('query', InputArgument::REQUIRED, 'The SQL query or SQL file')
-                ->addOption('host', 'd', InputOption::VALUE_OPTIONAL, 'The host name')
+                ->addOption('host', 'o', InputOption::VALUE_OPTIONAL, 'The host name')
                 ->addOption('base', 'b', InputOption::VALUE_OPTIONAL, 'The database')
                 ->addOption('user', 'u', InputOption::VALUE_OPTIONAL, 'The user name')
                 ->addOption('pass', 'p', InputOption::VALUE_OPTIONAL, 'The password')
-                ->addOption('danger', 'g', InputOption::VALUE_NONE, 'Output only danger queries')
+                ->addOption('danger', 'd', InputOption::VALUE_NONE, 'Output only danger queries')
                 ->addOption('no-hint', null, InputOption::VALUE_NONE, 'Disable hint');
     }
 
@@ -121,7 +121,7 @@ class ExplainCommand extends Command
     {
         SQLDecorator::$ansi = !$input->getOption('no-ansi');
 
-        $style = new OutputFormatterStyle('red', 'cyan');
+        $style = new OutputFormatterStyle('cyan');
         $output->getFormatter()->setStyle('code', $style);
         IO::setIO($input, $output);
     }

@@ -12,7 +12,6 @@
         "symfony/console": "3.1.*",
         "league/plates": "1.0.*",
         "jasny/db-mysql": "1.*",
-        "jdorn/sql-formatter": "1.2.*",
         "phpmyadmin/sql-parser": "^4.1"
     },
     "require-dev": {

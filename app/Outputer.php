@@ -27,14 +27,17 @@ class Outputer
             return;
         }
 
-        $table = new HelperTable(IO::$output);
-        $headers = $this->getHeaders();
-        $table->setHeaders($headers);
-
         $query = SQLDecorator::format($this->explainer->getQuery());
-        $rows = $this->getRows($query, count($headers));
+        $rows = $this->getRows();
         if ($rows) {
+            $table = new HelperTable(IO::$output);
+            $headers = $this->getHeaders();
+            $table->setHeaders($headers);
+
+            $queryRow = $this->getQueryRow($query, count($headers));
+            $rows = array_merge($queryRow, $rows);
             $table->setRows($rows);
+
             $table->render();
             IO::newline();
 
@@ -54,10 +57,9 @@ class Outputer
         ];
     }
 
-    public function getRows($query, $colspan)
+    public function getRows()
     {
-        $rows = $this->getQueryRow($query, $colspan);
-
+        $rows = [];
 
         $danger = 0;
         foreach ($this->explainer->rows as $row) {

@@ -2,6 +2,7 @@
 
 namespace Rap2hpoutre\MySQLExplainExplain;
 
+use PhpMyAdmin\SqlParser\Utils\Formatter;
 use SqlFormatter;
 
 class SQLDecorator
@@ -10,15 +11,32 @@ class SQLDecorator
 
     public static function highlight($query)
     {
-        if (self::$ansi) {
-            $query =  SqlFormatter::highlight($query);
-        }
-
-        return $query;
+        $option = array(
+            'indentation' => false,
+            'remove_comments' => false,
+            'clause_newline' => false,
+            'indent_parts' => false,
+        );
+        return self::format($query, $option);
     }
 
-    public static function format($query, $highlight = true)
+    public static function format($query, $extraOption = array())
     {
-        return SqlFormatter::format($query, self::$ansi);
+        $wrapper = '%s';
+        $option = array(
+            'parts_newline' => false,
+        );
+        if (!self::$ansi) {
+            $option['type'] ='text';
+        }
+
+        if (php_sapi_name() !== 'cli') {
+            $option['type'] = 'html';
+            $wrapper = '<pre style="color: black; background-color: white;">%s</pre>';
+        }
+
+        $option = array_merge($option, $extraOption);
+
+        return sprintf($wrapper, Formatter::format($query, $option));
     }
 }

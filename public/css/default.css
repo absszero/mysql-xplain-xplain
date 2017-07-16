@@ -23,3 +23,26 @@ textarea {
 #context_queries {
     display: none;
 }
+
+.sql-reserved {
+    color: #909;
+}
+.sql-keyword {
+    color: gray;
+}
+.sql-comment {
+    color: #9ACD32;
+    font-style:italic;
+}
+.sql-atom {
+    color: #333;
+}
+.sql-number {
+    color: green;
+}
+.sql-string {
+    color: purple;
+}
+.sql-variable {
+    color: #f90;
+}
