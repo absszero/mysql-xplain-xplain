@@ -31,9 +31,10 @@ class Outputer
             return;
         }
 
-        $query = SQLDecorator::format($this->explainer->getQuery());
+        $query = SQLDecorator::highlight($this->explainer->getQuery());
+        IO::writeln($query);
         $rows = $this->getRows();
-        if ($rows) {
+        if ($rows['rows']) {
             $output = IO::$output;
             foreach (['danger', 'warning'] as $type) {
                 if ($rows[$type] and in_array($type, $this->stderrQueries)) {
@@ -42,12 +43,8 @@ class Outputer
             }
 
             $table = new HelperTable($output);
-            $headers = $this->getHeaders();
-            $table->setHeaders($headers);
-
-            $queryRow = $this->getQueryRow($query, count($headers));
-            $rows = array_merge($queryRow, $rows['rows']);
-            $table->setRows($rows);
+            $table->setHeaders($this->getHeaders());
+            $table->setRows($rows['rows']);
 
             $table->render();
             IO::newline();

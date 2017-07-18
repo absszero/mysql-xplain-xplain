@@ -77,7 +77,7 @@ class ExplainCommand extends Command
             $outputer->render();
         } catch (DB_Exception $e) {
             $errOutput = IO::getErrorOutput();
-            $errOutput->writeln("<error>{$e->getError()}</error>: " . SQLDecorator::highlight($e->getQuery()));
+            $errOutput->writeln("<error>{$e->getError()}</error>: " . SQLDecorator::highlight($e->getQuery()) . PHP_EOL);
         }
     }
 
