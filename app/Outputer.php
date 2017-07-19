@@ -31,10 +31,11 @@ class Outputer
             return;
         }
 
-        $query = SQLDecorator::highlight($this->explainer->getQuery());
-        IO::writeln($query);
         $rows = $this->getRows();
         if ($rows['rows']) {
+            $query = SQLDecorator::highlight($this->explainer->getQuery());
+            IO::writeln($query);
+            
             $output = IO::$output;
             foreach (['danger', 'warning'] as $type) {
                 if ($rows[$type] and in_array($type, $this->stderrQueries)) {
